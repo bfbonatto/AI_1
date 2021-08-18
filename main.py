@@ -58,7 +58,8 @@ class Node:
 		current = self
 		path = []
 		while current is not None:
-			path.append(current.action)
+			if current.action is not None:
+				path.append(current.action)
 			current = current.parent
 		return list(reversed(path))
 
@@ -73,6 +74,8 @@ class Collection(Generic[T]):
 		pass
 	def next(self) -> Optional[T]:
 		pass
+	def __iter__(self):
+		return [].__iter__()
 
 def solve(start: State, target: State, frontier: Collection) -> Optional[List[Action]]:
 	visited: Set[State] = set()
@@ -100,6 +103,8 @@ class Stack(Collection):
 		if self.data == []:
 			return None
 		return self.data.pop()
+	def __iter__(self):
+		return reversed(self.data)
 
 class Queue(Collection):
 	def __init__(self):
@@ -113,6 +118,8 @@ class Queue(Collection):
 		if self.data == []:
 			return None
 		return self.data.pop(0)
+	def __iter__(self):
+		return self.data.__iter__()
 
 def dfs(start: State, target: State) -> Optional[List[Action]]:
 	return solve(start, target, Stack())
@@ -144,16 +151,21 @@ class Priority(Collection):
 
 	def insert(self, v: Node):
 		score = self.scoring(v.state) + v.path_cost
-		for (i,(points, _)) in enumerate(self.data):
-			if score < points:
-				self.data.insert(i, (score, v))
+		i = 0
+		for (p, _) in self.data:
+			if p > score:
 				break
+			i += 1
+		self.data.insert(i, (score, v))
+
 
 	def next(self):
 		if self.data == []:
 			return None
 		else:
-			return self.data.pop()[1]
+			return self.data.pop(0)[1]
+	def __iter__(self):
+		return [n[1] for n in self.data].__iter__()
 
 
 def astar_hamming(start, target):
