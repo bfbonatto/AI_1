@@ -121,10 +121,20 @@ def bfs(start: State, target: State) -> Optional[List[Action]]:
 	return solve(start, target, Queue())
 
 def hamming(s: State) -> int:
-	return -1
+	return sum([ 1 for (n,e) in enumerate(s) if (e == '_' and n != 8) or (n+1 != int(e) if e != '_' else False) ])
 
 def manhattan(s: State) -> int:
-	return -1
+	count = 0
+	for (i,c) in enumerate(s):
+		(x,y) = pos(c)
+		count += abs(i//3 - x) + abs(i%3 - y)
+	return count
+
+def pos(c: str):
+	if c == '_':
+		c = '9'
+	n = int(c)-1
+	return (n//3, n%3)
 
 class Priority(Collection):
 	def __init__(self, f: Callable[[State], int]):
@@ -144,3 +154,10 @@ class Priority(Collection):
 			return None
 		else:
 			return self.data.pop()[1]
+
+
+def astar_hamming(start, target):
+	return solve(start, target, Priority(hamming))
+
+def astar_manhattan(start, target):
+	return solve(start, target, Priority(manhattan))
